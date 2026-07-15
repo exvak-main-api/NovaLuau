@@ -31,6 +31,7 @@ enum class ASTType
     Return,
 
     Table,
+
     Index
 };
 
@@ -43,9 +44,7 @@ public:
 
     ASTType type;
 
-
     virtual ~ASTNode() = default;
-
 
 };
 
@@ -138,24 +137,6 @@ public:
 
 
 
-class ReturnNode : public ASTNode
-{
-
-public:
-
-    std::shared_ptr<ASTNode> value;
-
-
-    ReturnNode(
-        std::shared_ptr<ASTNode> value
-    )
-    {
-        type = ASTType::Return;
-        this->value = value;
-    }
-
-};
-
 class TableNode : public ASTNode
 {
 
@@ -175,5 +156,31 @@ public:
     }
 
 };
+
+
+
+class IndexNode : public ASTNode
+{
+
+public:
+
+    std::shared_ptr<ASTNode> object;
+
+    std::string key;
+
+
+    IndexNode(
+        std::shared_ptr<ASTNode> object,
+        const std::string& key
+    )
+    {
+        type = ASTType::Index;
+
+        this->object = object;
+        this->key = key;
+    }
+
+};
+
 
 }
