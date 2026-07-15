@@ -65,9 +65,7 @@ std::shared_ptr<ASTNode> Parser::parseTable()
         std::make_shared<TableNode>();
 
 
-    match(
-        TokenType::LeftBrace
-    );
+    match(TokenType::LeftBrace);
 
 
     while(
@@ -89,14 +87,11 @@ std::shared_ptr<ASTNode> Parser::parseTable()
         }
 
 
-        match(
-            TokenType::Equals
-        );
+        match(TokenType::Equals);
 
 
         auto value =
             parseExpression();
-
 
 
         table->fields.push_back(
@@ -106,19 +101,13 @@ std::shared_ptr<ASTNode> Parser::parseTable()
         });
 
 
-
-        if(
-            !match(TokenType::Comma)
-        )
+        if(!match(TokenType::Comma))
             break;
 
     }
 
 
-
-    match(
-        TokenType::RightBrace
-    );
+    match(TokenType::RightBrace);
 
 
     return table;
@@ -130,7 +119,7 @@ std::shared_ptr<ASTNode> Parser::parseTable()
 std::shared_ptr<ASTNode> Parser::parsePrimary()
 {
 
-    Token token = peek();
+    std::shared_ptr<ASTNode> node;
 
 
 
@@ -138,100 +127,119 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
         check(TokenType::LeftBrace)
     )
     {
-        return parseTable();
+        node = parseTable();
     }
 
 
-
-    token = advance();
-
-
-
-    if(
-        token.type == TokenType::Number
-    )
+    else
     {
-        return std::make_shared<ValueNode>(
-            ASTType::Number,
-            token.value
-        );
-    }
+
+        Token token = advance();
 
 
-
-    if(
-        token.type == TokenType::String
-    )
-    {
-        return std::make_shared<ValueNode>(
-            ASTType::String,
-            token.value
-        );
-    }
-
-
-
-    if(
-        token.type == TokenType::True
-    )
-    {
-        return std::make_shared<ValueNode>(
-            ASTType::Boolean,
-            "true"
-        );
-    }
-
-
-
-    if(
-        token.type == TokenType::False
-    )
-    {
-        return std::make_shared<ValueNode>(
-            ASTType::Boolean,
-            "false"
-        );
-    }
-
-
-
-    if(
-        token.type == TokenType::Nil
-    )
-    {
-        return std::make_shared<ValueNode>(
-            ASTType::Nil,
-            "nil"
-        );
-    }
-
-
-
-    if(
-        token.type == TokenType::Identifier
-    )
-    {
 
         if(
-            check(TokenType::LeftParen)
+            token.type == TokenType::Number
         )
         {
-            current--;
-            return parseCall();
+            node =
+                std::make_shared<ValueNode>(
+                    ASTType::Number,
+                    token.value
+                );
         }
 
 
-        return std::make_shared<VariableNode>(
-            token.value
-        );
+        else if(
+            token.type == TokenType::String
+        )
+        {
+            node =
+                std::make_shared<ValueNode>(
+                    ASTType::String,
+                    token.value
+                );
+        }
+
+
+        else if(
+            token.type == TokenType::True ||
+            token.type == TokenType::False
+        )
+        {
+            node =
+                std::make_shared<ValueNode>(
+                    ASTType::Boolean,
+                    token.value
+                );
+        }
+
+
+        else if(
+            token.type == TokenType::Nil
+        )
+        {
+            node =
+                std::make_shared<ValueNode>(
+                    ASTType::Nil,
+                    "nil"
+                );
+        }
+
+
+        else if(
+            token.type == TokenType::Identifier
+        )
+        {
+
+            node =
+                std::make_shared<VariableNode>(
+                    token.value
+                );
+
+        }
+
+
+        else
+        {
+            throw std::runtime_error(
+                "unexpected token: " + token.value
+            );
+        }
 
     }
 
 
 
-    throw std::runtime_error(
-        "unexpected token: " + token.value
-    );
+    while(
+        match(TokenType::Dot)
+    )
+    {
+
+        Token key = advance();
+
+
+        if(
+            key.type != TokenType::Identifier
+        )
+        {
+            throw std::runtime_error(
+                "expected field name"
+            );
+        }
+
+
+        node =
+            std::make_shared<IndexNode>(
+                node,
+                key.value
+            );
+
+    }
+
+
+
+    return node;
 
 }
 
@@ -256,10 +264,7 @@ std::shared_ptr<ASTNode> Parser::parseCall()
         );
 
 
-    match(
-        TokenType::LeftParen
-    );
-
+    match(TokenType::LeftParen);
 
 
     while(
@@ -273,18 +278,13 @@ std::shared_ptr<ASTNode> Parser::parseCall()
         );
 
 
-        if(
-            !match(TokenType::Comma)
-        )
+        if(!match(TokenType::Comma))
             break;
 
     }
 
 
-
-    match(
-        TokenType::RightParen
-    );
+    match(TokenType::RightParen);
 
 
     return call;
@@ -296,29 +296,20 @@ std::shared_ptr<ASTNode> Parser::parseCall()
 std::shared_ptr<ASTNode> Parser::parseStatement()
 {
 
-    if(
-        match(TokenType::Local)
-    )
+    if(match(TokenType::Local))
     {
 
         Token name = advance();
 
 
-        match(
-            TokenType::Equals
-        );
-
-
-        auto value =
-            parseExpression();
-
+        match(TokenType::Equals);
 
 
         return std::make_shared<
             VariableDeclarationNode
         >(
             name.value,
-            value
+            parseExpression()
         );
 
     }
@@ -326,18 +317,12 @@ std::shared_ptr<ASTNode> Parser::parseStatement()
 
 
     if(
-        check(TokenType::Identifier)
+        check(TokenType::Identifier) &&
+        tokens[current + 1].type ==
+        TokenType::LeftParen
     )
     {
-
-        if(
-            tokens[current + 1].type ==
-            TokenType::LeftParen
-        )
-        {
-            return parseCall();
-        }
-
+        return parseCall();
     }
 
 
