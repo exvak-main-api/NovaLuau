@@ -2,6 +2,7 @@
 
 #include "../parser/AST.hpp"
 #include "../objects/Function.hpp"
+#include "../objects/Table.hpp"
 
 #include <iostream>
 
@@ -73,9 +74,44 @@ Value evaluate(
         auto variable =
             std::static_pointer_cast<VariableNode>(node);
 
+
         return environment->get(
             variable->name
         );
+    }
+
+
+
+    if(node->type == ASTType::Table)
+    {
+
+        auto tableNode =
+            std::static_pointer_cast<TableNode>(node);
+
+
+
+        auto table =
+            std::make_shared<Table>();
+
+
+
+        for(auto& field : tableNode->fields)
+        {
+
+            table->set(
+                field.first,
+                evaluate(
+                    field.second,
+                    environment
+                )
+            );
+
+        }
+
+
+
+        return Value(table);
+
     }
 
 
@@ -147,14 +183,14 @@ void Executor::execute(
 
 
 
-            std::vector<Value> arguments;
+            std::vector<Value> args;
 
 
 
             for(auto& argument : call->arguments)
             {
 
-                arguments.push_back(
+                args.push_back(
                     evaluate(
                         argument,
                         environment
@@ -166,7 +202,7 @@ void Executor::execute(
 
 
             function->call(
-                arguments
+                args
             );
 
 
