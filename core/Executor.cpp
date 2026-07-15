@@ -71,6 +71,7 @@ Value evaluate(
 
     if(node->type == ASTType::Variable)
     {
+
         auto variable =
             std::static_pointer_cast<VariableNode>(node);
 
@@ -78,6 +79,7 @@ Value evaluate(
         return environment->get(
             variable->name
         );
+
     }
 
 
@@ -89,10 +91,8 @@ Value evaluate(
             std::static_pointer_cast<TableNode>(node);
 
 
-
         auto table =
             std::make_shared<Table>();
-
 
 
         for(auto& field : tableNode->fields)
@@ -109,8 +109,47 @@ Value evaluate(
         }
 
 
-
         return Value(table);
+
+    }
+
+
+
+    if(node->type == ASTType::Index)
+    {
+
+        auto index =
+            std::static_pointer_cast<IndexNode>(node);
+
+
+        Value object =
+            evaluate(
+                index->object,
+                environment
+            );
+
+
+        if(
+            object.getType()
+            ==
+            ValueType::TABLE
+        )
+        {
+
+            auto table =
+                object.asTable();
+
+
+            return table->get(
+                index->key
+            );
+
+        }
+
+
+        throw std::runtime_error(
+            "attempt to index non-table value"
+        );
 
     }
 
@@ -131,7 +170,10 @@ void Executor::execute(
     {
 
 
-        if(node->type == ASTType::VariableDeclaration)
+        if(
+            node->type ==
+            ASTType::VariableDeclaration
+        )
         {
 
             auto declaration =
@@ -141,17 +183,13 @@ void Executor::execute(
 
 
 
-            Value value =
+            environment->define(
+                declaration->name,
+
                 evaluate(
                     declaration->value,
                     environment
-                );
-
-
-
-            environment->define(
-                declaration->name,
-                value
+                )
             );
 
 
@@ -161,7 +199,10 @@ void Executor::execute(
 
 
 
-        if(node->type == ASTType::Call)
+        if(
+            node->type ==
+            ASTType::Call
+        )
         {
 
             auto call =
@@ -175,7 +216,6 @@ void Executor::execute(
                 environment->get(
                     call->name
                 );
-
 
 
             auto function =
@@ -204,7 +244,6 @@ void Executor::execute(
             function->call(
                 args
             );
-
 
         }
 
