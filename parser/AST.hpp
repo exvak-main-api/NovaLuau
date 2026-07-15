@@ -155,5 +155,24 @@ public:
 
 };
 
+class TableNode : public ASTNode
+{
+
+public:
+
+    std::vector<
+        std::pair<
+            std::string,
+            std::shared_ptr<ASTNode>
+        >
+    > fields;
+
+
+    TableNode()
+    {
+        type = ASTType::Table;
+    }
+
+};
 
 }
