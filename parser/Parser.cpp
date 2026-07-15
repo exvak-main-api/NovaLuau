@@ -1,6 +1,7 @@
 #include "Parser.hpp"
 #include <stdexcept>
 
+
 namespace NovaLuau
 {
 
@@ -56,45 +57,181 @@ bool Parser::match(
 
 
 
-std::shared_ptr<ASTNode> Parser::parseStatement()
+std::shared_ptr<ASTNode> Parser::parse()
 {
-    Token token = peek();
+    return nullptr;
+}
 
 
-    if(match(TokenType::Local))
+
+std::shared_ptr<ASTNode> Parser::parsePrimary()
+{
+
+    Token token = advance();
+
+
+    if(token.type == TokenType::Number)
     {
-        return std::make_shared<ASTNode>();
+        return std::make_shared<ValueNode>(
+            ASTType::Number,
+            token.value
+        );
     }
 
 
-    if(match(TokenType::Function))
+    if(token.type == TokenType::String)
     {
-        return std::make_shared<ASTNode>();
+        return std::make_shared<ValueNode>(
+            ASTType::String,
+            token.value
+        );
     }
 
 
-    if(match(TokenType::Return))
+    if(token.type == TokenType::True)
     {
-        return std::make_shared<ASTNode>();
+        return std::make_shared<ValueNode>(
+            ASTType::Boolean,
+            "true"
+        );
     }
 
 
-    return parseExpression();
+    if(token.type == TokenType::False)
+    {
+        return std::make_shared<ValueNode>(
+            ASTType::Boolean,
+            "false"
+        );
+    }
+
+
+    if(token.type == TokenType::Nil)
+    {
+        return std::make_shared<ValueNode>(
+            ASTType::Nil,
+            "nil"
+        );
+    }
+
+
+    if(token.type == TokenType::Identifier)
+    {
+        return std::make_shared<VariableNode>(
+            token.value
+        );
+    }
+
+
+    throw std::runtime_error(
+        "unexpected token: " + token.value
+    );
+
 }
 
 
 
 std::shared_ptr<ASTNode> Parser::parseExpression()
 {
-    advance();
+    return parsePrimary();
+}
 
-    return std::make_shared<ASTNode>();
+
+
+std::shared_ptr<ASTNode> Parser::parseCall()
+{
+    Token name = advance();
+
+
+    auto call =
+        std::make_shared<CallNode>(
+            name.value
+        );
+
+
+    match(
+        TokenType::LeftParen
+    );
+
+
+    while(
+        !check(TokenType::RightParen) &&
+        !check(TokenType::EndOfFile)
+    )
+    {
+
+        call->arguments.push_back(
+            parseExpression()
+        );
+
+
+        if(!match(TokenType::Comma))
+            break;
+
+    }
+
+
+    match(
+        TokenType::RightParen
+    );
+
+
+    return call;
+}
+
+
+
+std::shared_ptr<ASTNode> Parser::parseStatement()
+{
+
+    if(match(TokenType::Local))
+    {
+
+        Token name = advance();
+
+
+        match(
+            TokenType::Equals
+        );
+
+
+        auto value =
+            parseExpression();
+
+
+        return std::make_shared<VariableDeclarationNode>(
+            name.value,
+            value
+        );
+
+    }
+
+
+
+    if(check(TokenType::Identifier))
+    {
+
+        if(
+            tokens[current + 1].type ==
+            TokenType::LeftParen
+        )
+        {
+            return parseCall();
+        }
+
+    }
+
+
+
+    return parseExpression();
+
 }
 
 
 
 std::vector<std::shared_ptr<ASTNode>> Parser::parse()
 {
+
     std::vector<std::shared_ptr<ASTNode>> nodes;
 
 
@@ -102,9 +239,11 @@ std::vector<std::shared_ptr<ASTNode>> Parser::parse()
         !check(TokenType::EndOfFile)
     )
     {
+
         nodes.push_back(
             parseStatement()
         );
+
     }
 
 
