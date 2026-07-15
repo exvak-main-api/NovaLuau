@@ -1,3 +1,5 @@
+#include "Executor.hpp"
+
 #include "VM.hpp"
 
 #include "../libraries/Base.hpp"
@@ -56,12 +58,8 @@ bool VM::execute(
             parser.parse();
 
 
-        /*
-            Executor will be added here.
-            The parser currently builds the AST.
-        */
-
-
+        Executor executor(global);
+        executor.execute(tree);
         return true;
 
     }
