@@ -4,6 +4,7 @@ project(NovaLuau)
 
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 include_directories(
@@ -21,6 +22,7 @@ add_library(
     core/Value.cpp
     core/Environment.cpp
     core/VM.cpp
+    core/Executor.cpp
 
     objects/Table.cpp
     objects/Function.cpp
@@ -33,7 +35,28 @@ add_library(
 )
 
 
-find_package(Python3 COMPONENTS Development REQUIRED)
+
+add_executable(
+    NovaLuauConsole
+
+    main.cpp
+)
+
+
+target_link_libraries(
+    NovaLuauConsole
+
+    NovaLuau
+)
+
+
+
+find_package(
+    Python3
+    COMPONENTS Development
+    REQUIRED
+)
+
 
 
 add_library(
@@ -44,6 +67,7 @@ add_library(
 )
 
 
+
 target_link_libraries(
     novaluau
 
@@ -51,6 +75,7 @@ target_link_libraries(
 
     Python3::Python
 )
+
 
 
 set_target_properties(
