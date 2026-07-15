@@ -3,26 +3,32 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
+
 #include "../core/Value.hpp"
 #include "../core/Environment.hpp"
+
 
 namespace NovaLuau
 {
 
+
 class Function
 {
+
+public:
+
+    using NativeFunction =
+        std::function<Value(
+            std::vector<Value>
+        )>;
+
 
 private:
 
     std::string name;
 
-    std::vector<std::string> parameters;
-
-    std::vector<std::string> body;
-
-    std::string source;
-
-    int lineDefined;
+    NativeFunction nativeCallback;
 
     bool isNative;
 
@@ -31,10 +37,7 @@ public:
 
     Function(
         const std::string& name,
-        const std::vector<std::string>& parameters,
-        const std::vector<std::string>& body,
-        const std::string& source,
-        int lineDefined
+        NativeFunction callback
     );
 
 
@@ -44,26 +47,17 @@ public:
 
 
     Value call(
-        std::vector<Value> args,
-        std::shared_ptr<Environment> environment
+        std::vector<Value> args
     );
 
 
     std::string getName();
 
 
-    std::string getSource();
-
-
-    int getLineDefined();
-
-
     bool native();
 
 
-    std::string getInfo();
-
-
 };
+
 
 }
