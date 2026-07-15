@@ -122,7 +122,9 @@ public:
 
     std::string name;
 
-    std::vector<std::shared_ptr<ASTNode>> arguments;
+    std::vector<
+        std::shared_ptr<ASTNode>
+    > arguments;
 
 
     CallNode(
@@ -181,6 +183,40 @@ public:
     }
 
 };
+
+
+
+class FunctionNode : public ASTNode
+{
+
+public:
+
+    std::string name;
+
+
+    std::vector<std::string> parameters;
+
+
+    std::vector<
+        std::shared_ptr<ASTNode>
+    > body;
+
+
+
+    FunctionNode(
+        const std::string& name
+    )
+    {
+
+        type = ASTType::Function;
+
+        this->name = name;
+
+    }
+
+
+};
+
 
 
 }
