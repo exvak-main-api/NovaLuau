@@ -1,4 +1,6 @@
 #include "Debug.hpp"
+
+#include "../objects/Table.hpp"
 #include "../objects/Function.hpp"
 
 namespace NovaLuau
