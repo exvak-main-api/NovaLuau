@@ -65,7 +65,9 @@ std::shared_ptr<ASTNode> Parser::parseTable()
         std::make_shared<TableNode>();
 
 
-    match(TokenType::LeftBrace);
+    match(
+        TokenType::LeftBrace
+    );
 
 
     while(
@@ -74,7 +76,8 @@ std::shared_ptr<ASTNode> Parser::parseTable()
     )
     {
 
-        Token key = advance();
+        Token key =
+            advance();
 
 
         if(
@@ -87,11 +90,14 @@ std::shared_ptr<ASTNode> Parser::parseTable()
         }
 
 
-        match(TokenType::Equals);
+        match(
+            TokenType::Equals
+        );
 
 
         auto value =
             parseExpression();
+
 
 
         table->fields.push_back(
@@ -101,13 +107,19 @@ std::shared_ptr<ASTNode> Parser::parseTable()
         });
 
 
-        if(!match(TokenType::Comma))
+
+        if(
+            !match(TokenType::Comma)
+        )
             break;
 
     }
 
 
-    match(TokenType::RightBrace);
+
+    match(
+        TokenType::RightBrace
+    );
 
 
     return table;
@@ -127,14 +139,17 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
         check(TokenType::LeftBrace)
     )
     {
-        node = parseTable();
-    }
 
+        node =
+            parseTable();
+
+    }
 
     else
     {
 
-        Token token = advance();
+        Token token =
+            advance();
 
 
 
@@ -150,6 +165,7 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
         }
 
 
+
         else if(
             token.type == TokenType::String
         )
@@ -160,6 +176,7 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
                     token.value
                 );
         }
+
 
 
         else if(
@@ -175,6 +192,7 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
         }
 
 
+
         else if(
             token.type == TokenType::Nil
         )
@@ -185,6 +203,7 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
                     "nil"
                 );
         }
+
 
 
         else if(
@@ -198,6 +217,7 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
                 );
 
         }
+
 
 
         else
@@ -216,7 +236,8 @@ std::shared_ptr<ASTNode> Parser::parsePrimary()
     )
     {
 
-        Token key = advance();
+        Token key =
+            advance();
 
 
         if(
@@ -255,7 +276,8 @@ std::shared_ptr<ASTNode> Parser::parseExpression()
 std::shared_ptr<ASTNode> Parser::parseCall()
 {
 
-    Token name = advance();
+    Token name =
+        advance();
 
 
     auto call =
@@ -264,7 +286,11 @@ std::shared_ptr<ASTNode> Parser::parseCall()
         );
 
 
-    match(TokenType::LeftParen);
+
+    match(
+        TokenType::LeftParen
+    );
+
 
 
     while(
@@ -278,13 +304,18 @@ std::shared_ptr<ASTNode> Parser::parseCall()
         );
 
 
-        if(!match(TokenType::Comma))
+        if(
+            !match(TokenType::Comma)
+        )
             break;
 
     }
 
 
-    match(TokenType::RightParen);
+
+    match(
+        TokenType::RightParen
+    );
 
 
     return call;
@@ -293,16 +324,117 @@ std::shared_ptr<ASTNode> Parser::parseCall()
 
 
 
+std::shared_ptr<ASTNode> Parser::parseFunction()
+{
+
+    Token name =
+        advance();
+
+
+
+    auto function =
+        std::make_shared<FunctionNode>(
+            name.value
+        );
+
+
+
+    match(
+        TokenType::LeftParen
+    );
+
+
+
+    while(
+        !check(TokenType::RightParen) &&
+        !check(TokenType::EndOfFile)
+    )
+    {
+
+        Token parameter =
+            advance();
+
+
+        if(
+            parameter.type ==
+            TokenType::Identifier
+        )
+        {
+
+            function->parameters.push_back(
+                parameter.value
+            );
+
+        }
+
+
+        if(
+            !match(TokenType::Comma)
+        )
+            break;
+
+    }
+
+
+
+    match(
+        TokenType::RightParen
+    );
+
+
+
+    while(
+        !check(TokenType::End) &&
+        !check(TokenType::EndOfFile)
+    )
+    {
+
+        function->body.push_back(
+            parseStatement()
+        );
+
+    }
+
+
+
+    match(
+        TokenType::End
+    );
+
+
+
+    return function;
+
+}
+
+
+
 std::shared_ptr<ASTNode> Parser::parseStatement()
 {
 
-    if(match(TokenType::Local))
+    if(
+        match(TokenType::Function)
+    )
     {
 
-        Token name = advance();
+        return parseFunction();
+
+    }
 
 
-        match(TokenType::Equals);
+
+    if(
+        match(TokenType::Local)
+    )
+    {
+
+        Token name =
+            advance();
+
+
+        match(
+            TokenType::Equals
+        );
 
 
         return std::make_shared<
@@ -317,12 +449,20 @@ std::shared_ptr<ASTNode> Parser::parseStatement()
 
 
     if(
-        check(TokenType::Identifier) &&
-        tokens[current + 1].type ==
-        TokenType::LeftParen
+        check(TokenType::Identifier)
     )
     {
-        return parseCall();
+
+        if(
+            tokens[current + 1].type ==
+            TokenType::LeftParen
+        )
+        {
+
+            return parseCall();
+
+        }
+
     }
 
 
@@ -336,7 +476,10 @@ std::shared_ptr<ASTNode> Parser::parseStatement()
 std::vector<std::shared_ptr<ASTNode>> Parser::parse()
 {
 
-    std::vector<std::shared_ptr<ASTNode>> nodes;
+    std::vector<
+        std::shared_ptr<ASTNode>
+    > nodes;
+
 
 
     while(
@@ -351,9 +494,10 @@ std::vector<std::shared_ptr<ASTNode>> Parser::parse()
     }
 
 
+
     return nodes;
 
 }
 
 
-}
+    }
