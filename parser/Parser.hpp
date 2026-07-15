@@ -2,20 +2,13 @@
 
 #include <vector>
 #include <memory>
+
 #include "Lexer.hpp"
+#include "AST.hpp"
+
 
 namespace NovaLuau
 {
-
-
-class ASTNode
-{
-public:
-
-    virtual ~ASTNode() = default;
-
-};
-
 
 
 class Parser
@@ -50,6 +43,12 @@ private:
     std::shared_ptr<ASTNode> parseExpression();
 
 
+    std::shared_ptr<ASTNode> parsePrimary();
+
+
+    std::shared_ptr<ASTNode> parseCall();
+
+
 public:
 
     Parser(
@@ -58,7 +57,6 @@ public:
 
 
     std::vector<std::shared_ptr<ASTNode>> parse();
-
 
 };
 
