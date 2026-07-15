@@ -30,7 +30,8 @@ enum class ASTType
 
     Return,
 
-    Table
+    Table,
+    Index
 };
 
 
