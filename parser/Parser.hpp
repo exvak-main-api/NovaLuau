@@ -49,6 +49,13 @@ private:
     std::shared_ptr<ASTNode> parseCall();
 
 
+    std::shared_ptr<ASTNode> parseTable();
+
+
+    std::shared_ptr<ASTNode> parseFunction();
+
+
+
 public:
 
     Parser(
@@ -56,7 +63,10 @@ public:
     );
 
 
-    std::vector<std::shared_ptr<ASTNode>> parse();
+    std::vector<
+        std::shared_ptr<ASTNode>
+    > parse();
+
 
 };
 
