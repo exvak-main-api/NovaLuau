@@ -1,6 +1,6 @@
-#include "Executor.hpp"
-
 #include "VM.hpp"
+
+#include "Executor.hpp"
 
 #include "../libraries/Base.hpp"
 #include "../libraries/Debug.hpp"
@@ -46,32 +46,48 @@ bool VM::execute(
     try
     {
 
-        Lexer lexer(code);
+        Lexer lexer(
+            code
+        );
+
 
         auto tokens =
             lexer.tokenize();
 
 
-        Parser parser(tokens);
 
-        auto tree =
+        Parser parser(
+            tokens
+        );
+
+
+        auto nodes =
             parser.parse();
 
 
-        Executor executor(global);
-        executor.execute(tree);
+
+        Executor executor(
+            global
+        );
+
+
+        executor.execute(
+            nodes
+        );
+
+
         return true;
 
     }
 
     catch(
-        const std::exception& e
+        const std::exception& error
     )
     {
 
         std::cout
             << "NovaLuau Error: "
-            << e.what()
+            << error.what()
             << std::endl;
 
 
