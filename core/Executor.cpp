@@ -1,6 +1,7 @@
 #include "Executor.hpp"
 
 #include "../parser/AST.hpp"
+#include "../objects/Function.hpp"
 
 #include <iostream>
 
@@ -24,9 +25,7 @@ Value evaluate(
 )
 {
 
-    if(
-        node->type == ASTType::Number
-    )
+    if(node->type == ASTType::Number)
     {
         auto value =
             std::static_pointer_cast<ValueNode>(node);
@@ -38,9 +37,7 @@ Value evaluate(
 
 
 
-    if(
-        node->type == ASTType::String
-    )
+    if(node->type == ASTType::String)
     {
         auto value =
             std::static_pointer_cast<ValueNode>(node);
@@ -52,9 +49,7 @@ Value evaluate(
 
 
 
-    if(
-        node->type == ASTType::Boolean
-    )
+    if(node->type == ASTType::Boolean)
     {
         auto value =
             std::static_pointer_cast<ValueNode>(node);
@@ -66,18 +61,14 @@ Value evaluate(
 
 
 
-    if(
-        node->type == ASTType::Nil
-    )
+    if(node->type == ASTType::Nil)
     {
         return Value();
     }
 
 
 
-    if(
-        node->type == ASTType::Variable
-    )
+    if(node->type == ASTType::Variable)
     {
         auto variable =
             std::static_pointer_cast<VariableNode>(node);
@@ -104,10 +95,7 @@ void Executor::execute(
     {
 
 
-        if(
-            node->type ==
-            ASTType::VariableDeclaration
-        )
+        if(node->type == ASTType::VariableDeclaration)
         {
 
             auto declaration =
@@ -116,11 +104,13 @@ void Executor::execute(
                 >(node);
 
 
+
             Value value =
                 evaluate(
                     declaration->value,
                     environment
                 );
+
 
 
             environment->define(
@@ -135,10 +125,7 @@ void Executor::execute(
 
 
 
-        if(
-            node->type ==
-            ASTType::Call
-        )
+        if(node->type == ASTType::Call)
         {
 
             auto call =
@@ -147,31 +134,40 @@ void Executor::execute(
                 >(node);
 
 
-            if(
-                call->name == "print"
-            )
+
+            Value functionValue =
+                environment->get(
+                    call->name
+                );
+
+
+
+            auto function =
+                functionValue.asFunction();
+
+
+
+            std::vector<Value> arguments;
+
+
+
+            for(auto& argument : call->arguments)
             {
 
-                if(
-                    !call->arguments.empty()
-                )
-                {
-
-                    Value value =
-                        evaluate(
-                            call->arguments[0],
-                            environment
-                        );
-
-
-                    std::cout
-                        << value.toString()
-                        << std::endl;
-
-                }
-
+                arguments.push_back(
+                    evaluate(
+                        argument,
+                        environment
+                    )
+                );
 
             }
+
+
+
+            function->call(
+                arguments
+            );
 
 
         }
